@@ -1,45 +1,49 @@
-class StartMessage
-
-  def clear_scren
-    print "\e[H\e[2J"
-  end
-
-  def sleep_dialog
-    sleep(0.05)
-  end
-
+class SplitText
   def dialog_each(text)
     text.each do |i|
       print i 
-      sleep_dialog
+      sleep(0.05)
     end
   end
 
   def dialog_split(text)
     dialog_each(text.split(''))
   end
+end
 
+class StartMessage
 
+  def initialize
+    @dialog = SplitText.new
+  end
+
+  def sleep_dialog
+    sleep(1)
+  end
+
+  def clear_scren
+    print "\e[H\e[2J"
+  end
 
   def new_start
     clear_scren
 
     print ">> "
-    sleep(1)
+    sleep_dialog
 
-    dialog_split("SYSTEM BOOT...")
+    @dialog.dialog_split("SYSTEM BOOT...")
 
     puts
 
     print ">> "
-    sleep(1)
+    sleep_dialog
 
-    dialog_split("LOADING PROTOCOL: LEGACY_CORE...")
-    sleep(1)
+    @dialog.dialog_split("LOADING PROTOCOL: LEGACY_CORE...")
+    sleep_dialog
 
     clear_scren
 
-    arr = 
+    text = 
     [
       "Царство чистого кода пало...",
       "Из глубин системы пробудился МОРДЕКОД — воплощение хаоса, порождённое спагетти-кодом и забытыми багами",
@@ -51,34 +55,35 @@ class StartMessage
       "Каждая программа — шаг к победе"
     ]
 
-    arr.each do |i|
-
-      dialog_split(i)
-      sleep(2)
+    text.each do |value|
+      @dialog.dialog_split(value)
+      sleep_dialog
+      sleep_dialog
       clear_scren
     end
 
     puts "..."
-    sleep(1)
+    sleep_dialog
 
     print ">> "
-    sleep(1)
+    sleep_dialog
 
-    dialog_split("YOUR_JOURNEY_BEGINS_NOW")
+    @dialog.dialog_split("YOUR_JOURNEY_BEGINS_NOW")
 
-    sleep(1)
+    sleep_dialog
     clear_scren
 
     print ">> "
-    sleep(1)
+    sleep_dialog
 
-    dialog_split("RUN: quest_tracker.rb")
+    @dialog.dialog_split("RUN: quest_tracker.rb")
 
-    sleep(1)
+    sleep_dialog
     clear_scren
 
     print '...'
-    sleep(2)
+    sleep_dialog
+    sleep_dialog
   end
 
 end
