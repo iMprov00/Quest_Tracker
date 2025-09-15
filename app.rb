@@ -4,11 +4,15 @@ require 'win32/sound'
 require 'json'
 include Win32
 
-class GameChapter
-  
+class GameMap
+  def initialize
+    @map = GameJSON.new.parsed_data[:chapter]
+    @user = UserJSON.new.parsed_data
+  end
 
   def chapter
-    
+      puts "#{@map[(@user[:chapter]).to_sym][:name]}"
+      puts "#{@map[(@user[:chapter]).to_sym][:quests]}"
   end
 end
 
@@ -91,6 +95,7 @@ end
 
 start = StartMessage.new
 message = Messages.new
+map = GameMap.new
 #start.new_start
 
 Helper.clear
@@ -116,7 +121,9 @@ loop do
   case input
 
   when 1
-
+    Helper.clear
+    map.chapter
+    gets
 
 
   when 2
