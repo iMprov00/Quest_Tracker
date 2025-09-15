@@ -12,7 +12,7 @@ class PlayerStatistics
   def stat_player
     puts "Статистика"
     puts "Имя: #{@user[:name]}"
-    puts "Пройдено квестов: #{@user[:locations].length}"
+    puts "Пройдено квестов: #{@user[:quests].length}"
     puts "Побеждено боссов: #{@user[:bosses].length}"
     puts "Уровень: #{( Math.sqrt(@user[:xp]) / 5 ).round} || XP: #{@user[:xp]}"
   end
@@ -42,12 +42,13 @@ class UserJSON
 end
 
 
-module ClearScreen
+module Helper
   module_function
 
   def clear
     print "\e[H\e[2J"
   end
+
 end
 
 
@@ -65,13 +66,16 @@ start = StartMessage.new
 
 #start.new_start
 
-ClearScreen.clear
+Helper.clear
 
 puts "Добро пожаловать в RUBY REALMS!"
+sleep(2)
+Helper.clear
 
 statistics = PlayerStatistics.new
 statistics.stat_player
-
+sleep(5)
+Helper.clear
 
 loop do 
 
