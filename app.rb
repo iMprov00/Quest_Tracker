@@ -4,40 +4,27 @@ require 'win32/sound'
 require 'json'
 include Win32
 
-module DataSearch
-  module_function
-
-  def search 
-    
-  end
-end
 
 class GameMap
+  attr_reader :index
+
   def initialize 
     @map = GameJSON.new.parsed_data[:chapter]
     @user = UserJSON.new.parsed_data
+    @index = 0
   end
 
   def your_chapter
     @map[(@user[:chapter]).to_sym]
   end
 
-  def chapter
-      index = 0
-      puts "\t#{your_chapter[:name]}"
-      puts "Задания:"
-      your_chapter[:quests].each do |value|
-        if value[:completed] == false
-          puts "#{index += 1}. #{value[:name]}"
-        end
-      end
-      puts
-      puts "Боссы: "
-      your_chapter[:bosses].each do |value|
-        if value[:completed] == false
-         puts "#{index += 1}. #{value[:name]}"
-        end
-      end
+  def chapter_quest
+    your_chapter[:quests].each do |value|
+      puts "#{@index += 1}. #{value[:name]}"
+    end
+  end
+
+  def chapter_boss
 
   end
 end
@@ -132,7 +119,7 @@ Helper.clear
 
 statistics = PlayerStatistics.new
 statistics.stat_player
-sleep(5)
+sleep(1)
 
 loop do 
   Helper.clear
@@ -147,11 +134,47 @@ loop do
   case input
 
   when 1
-    Helper.clear
-    map.chapter
-    print "Ввод: "
-    input = gets.to_i
+    loop do
 
+      Helper.clear
+      puts "\tТип квеста"
+      puts "1. Задания"
+      puts "2. Босс"
+      puts "3. Назад"
+      print "Ввод: "
+      input = gets.to_i
+
+      case input
+
+      when 1
+        map = GameMap.new
+        Helper.clear
+        map.chapter_quest
+        print "Ввод: "
+        input = gets.to_i
+
+        if input <= map.index
+          puts "cool"
+          sleep(2)
+        elsif (input + 1) == map.index
+          break
+        else
+          Helper.clear
+          message.error
+          sleep(2)
+        end
+
+      when 2
+        map.chapter_boss
+      when 3
+        break
+      else
+        Helper.clear
+        message.error
+        sleep(2)
+      end
+
+    end #end loop
 
   when 2
     Helper.clear
