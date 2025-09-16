@@ -23,10 +23,22 @@ class GameMap
   end
 
   def chapter
-      puts "#{your_chapter[:name]}"
-      your_chapter[:quests].each_with_index do |value, index|
-        puts "#{index + 1}. #{value[:name]}" 
+      index = 0
+      puts "\t#{your_chapter[:name]}"
+      puts "Задания:"
+      your_chapter[:quests].each do |value|
+        if value[:completed] == false
+          puts "#{index += 1}. #{value[:name]}"
+        end
       end
+      puts
+      puts "Боссы: "
+      your_chapter[:bosses].each do |value|
+        if value[:completed] == false
+         puts "#{index += 1}. #{value[:name]}"
+        end
+      end
+
   end
 end
 
@@ -137,7 +149,8 @@ loop do
   when 1
     Helper.clear
     map.chapter
-    gets
+    print "Ввод: "
+    input = gets.to_i
 
 
   when 2
