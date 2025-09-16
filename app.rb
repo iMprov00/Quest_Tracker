@@ -4,15 +4,29 @@ require 'win32/sound'
 require 'json'
 include Win32
 
+module DataSearch
+  module_function
+
+  def search 
+    
+  end
+end
+
 class GameMap
-  def initialize
+  def initialize 
     @map = GameJSON.new.parsed_data[:chapter]
     @user = UserJSON.new.parsed_data
   end
 
+  def your_chapter
+    @map[(@user[:chapter]).to_sym]
+  end
+
   def chapter
-      puts "#{@map[(@user[:chapter]).to_sym][:name]}"
-      puts "#{@map[(@user[:chapter]).to_sym][:quests]}"
+      puts "#{your_chapter[:name]}"
+      your_chapter[:quests].each_with_index do |value, index|
+        puts "#{index + 1}. #{value[:name]}" 
+      end
   end
 end
 
@@ -30,7 +44,7 @@ class PlayerStatistics
   end
 end
 
-class UserJSON
+class UserJSON 
   attr_reader :parsed_data
 
   def initialize
