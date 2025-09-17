@@ -59,18 +59,21 @@ class Menu
       @screen.clear
       puts "=== RUBY REALMS ==="
       puts "1. Мои задания"
-      puts "2. Статистика"
-      puts "3. Выйти"
+      puts "2. Боссы"
+      puts "3. Статистика"
+      puts "4. Выйти"
       print "Выберите вариант: "
       
       choice = gets.chomp.to_i
       
       case choice
       when 1
-        show_quests_menu
+        show_quests_menu(:quests)
       when 2
-        show_stats
+        show_quests_menu(:bosses)
       when 3
+        show_stats
+      when 4
         exit
       else
         @screen.clear
@@ -80,12 +83,12 @@ class Menu
     end
   end
 
-  def show_quests_menu
+  def show_quests_menu(who)
     user_data = UserJSON.new.parsed_data
     game_data = GameJSON.new.parsed_data
     current_chapter = user_data[:chapter]
 
-    available_quests = game_data[current_chapter.to_sym][:quests].select {|q| q[:completed] == false }
+    available_quests = game_data[current_chapter.to_sym][who].select {|q| q[:completed] == false }
 
     loop do
       @screen.clear
@@ -101,6 +104,7 @@ class Menu
         end
         puts "#{available_quests.size + 1}. Назад"
         
+        print "Выберите вариант: "
         choice = gets.chomp.to_i
 
         if choice == available_quests.size + 1 
