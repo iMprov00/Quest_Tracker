@@ -5,44 +5,6 @@ require 'json'
 include Win32
 
 
-class GameMap
-  attr_reader :index
-
-  def initialize 
-    @map = GameJSON.new.parsed_data[:chapter]
-    @user = UserJSON.new.parsed_data
-    @index = 0
-  end
-
-  def your_chapter
-    @map[(@user[:chapter]).to_sym]
-  end
-
-  def chapter_quest
-    your_chapter[:quests].each do |value|
-      puts "#{@index += 1}. #{value[:name]}"
-    end
-  end
-
-  def chapter_boss
-
-  end
-end
-
-class PlayerStatistics 
-  def initialize
-    @user = UserJSON.new.parsed_data
-  end
-
-  def stat_player
-    puts "\tСтатистика"
-    puts "Имя: #{@user[:name]}"
-    puts "Пройдено квестов: #{@user[:quests].length}"
-    puts "Побеждено боссов: #{@user[:bosses].length}"
-    puts "Уровень: #{( Math.sqrt(@user[:xp]) / 5 ).round} || XP: #{@user[:xp]}"
-  end
-end
-
 class UserJSON 
   attr_reader :parsed_data
 
@@ -81,18 +43,22 @@ class GameJSON
   end
 end
 
-class Messages
-  def error
-    puts "Некорректный ввод!"
-  end
-end
 
-module Helper
-  module_function
 
-  def clear
-    print "\e[H\e[2J"
+class Menu
+
+  def show_main_menu
+
   end
+
+  def show_quests_menu
+
+  end
+
+  def show_quest_details(index)
+
+  end
+
 end
 
 
@@ -108,84 +74,11 @@ end
 
 start = StartMessage.new
 message = Messages.new
-map = GameMap.new
+
 #start.new_start
 
-Helper.clear
+message.clear
 
 puts "Добро пожаловать в RUBY REALMS!"
 sleep(2)
-Helper.clear
-
-statistics = PlayerStatistics.new
-statistics.stat_player
-sleep(1)
-
-loop do 
-  Helper.clear
-
-  puts "\tМеню"
-  puts "1. Отправиться в путь"
-  puts "2. Посмотреть статистику"
-  puts "3. Выйти"
-  print "Ввод: "
-  input = gets.to_i
-
-  case input
-
-  when 1
-    loop do
-
-      Helper.clear
-      puts "\tТип квеста"
-      puts "1. Задания"
-      puts "2. Босс"
-      puts "3. Назад"
-      print "Ввод: "
-      input = gets.to_i
-
-      case input
-
-      when 1
-        map = GameMap.new
-        Helper.clear
-        map.chapter_quest
-        print "Ввод: "
-        input = gets.to_i
-
-        if input <= map.index
-          puts "cool"
-          sleep(2)
-        elsif (input + 1) == map.index
-          break
-        else
-          Helper.clear
-          message.error
-          sleep(2)
-        end
-
-      when 2
-        map.chapter_boss
-      when 3
-        break
-      else
-        Helper.clear
-        message.error
-        sleep(2)
-      end
-
-    end #end loop
-
-  when 2
-    Helper.clear
-    statistics.stat_player
-    sleep(5)
-  when 3
-    exit
-  else
-    Helper.clear
-    message.error
-    sleep(2)
-  end
-
-end
+message.clear
