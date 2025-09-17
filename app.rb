@@ -133,9 +133,14 @@ class Menu
 
     @screen.clear
 
-    puts available_quests[:name]
-    puts available_quests[:description]
-    gets 
+    puts "=== #{available_quests[:name]} ==="
+    puts "Описание: \t#{available_quests[:description]}"
+    puts "Подробнее: \t#{available_quests[:other]}"
+    puts 
+    puts "Репозиторий: #{available_quests[:rep].empty? ? "пусто :(" : available_quests[:rep]}"
+    puts
+    print "Укажите репозиторий или 1 чтобы вернуться назад: "
+    choice = gets.chomp
     return
   end
 
