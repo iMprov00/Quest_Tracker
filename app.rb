@@ -89,31 +89,37 @@ class Menu
 
     loop do
       @screen.clear
-      puts "=== RUBY REALMS ==="
+      puts "=== #{game_data[current_chapter.to_sym][:name]} ==="
 
-      available_quests.each_with_index do |value, index|
-        puts "#{index + 1}. #{value[:name]}"
-      end
-      puts "#{available_quests.size + 1}. Назад"
-      
-      choice = gets.chomp.to_i
-
-      if choice == available_quests.size + 1 
+      if available_quests.empty?
+        puts "Ты уже выполнил все задания в этой главе!"
+        sleep(3)
         return
-      elsif choice.between?(1, available_quests.size)
-        show_quest_details(available_quests.size - 1)
       else
-        @screen.clear
-        puts "Неверный выбор!"
-        sleep(2)
-      end #end if
+        available_quests.each_with_index do |value, index|
+          puts "#{index + 1}. #{value[:name]}"
+        end
+        puts "#{available_quests.size + 1}. Назад"
+        
+        choice = gets.chomp.to_i
+
+        if choice == available_quests.size + 1 
+          return
+        elsif choice.between?(1, available_quests.size)
+          show_quest_details(available_quests.size - 1)
+        else
+          @screen.clear
+          puts "Неверный выбор!"
+          sleep(2)
+        end #end if 2
+      end #end if 1
     end #end loop
   end
 
   def show_quest_details(index)
     game_data = GameJSON.new.parsed_data
 
-    
+
   end
 
 end
