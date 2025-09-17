@@ -83,11 +83,19 @@ class Menu
     end
   end
 
-  def show_quests_menu(who)
-    user_data = UserJSON.new.parsed_data
+  def game_data
     game_data = GameJSON.new.parsed_data
-    current_chapter = user_data[:chapter]
+  end
 
+  def user_data
+    user_data = UserJSON.new.parsed_data
+  end
+
+  def current_chapter
+    user_data[:chapter]
+  end
+
+  def show_quests_menu(who)
     available_quests = game_data[current_chapter.to_sym][who].select {|q| q[:completed] == false }
 
     loop do
@@ -110,7 +118,7 @@ class Menu
         if choice == available_quests.size + 1 
           return
         elsif choice.between?(1, available_quests.size)
-          show_quest_details(available_quests.size - 1)
+          show_quest_details(available_quests.size - 1, who)
         else
           @screen.clear
           puts "Неверный выбор!"
@@ -120,10 +128,15 @@ class Menu
     end #end loop
   end
 
-  def show_quest_details(index)
-    game_data = GameJSON.new.parsed_data
+  def show_quest_details(index, who)
+    available_quests = game_data[current_chapter.to_sym][who][index]
 
+    @screen.clear
 
+    puts available_quests[:name]
+    puts available_quests[:description]
+    gets 
+    return
   end
 
 end
