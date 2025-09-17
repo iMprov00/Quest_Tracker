@@ -22,7 +22,35 @@ class UserJSON
              {} # Если файла нет, создаем пустой массив задач
            end #парсим данные в переменную
   end
+
+  def save_task #метод для сохранения изменений в файл
+    # Записываем обновленные данные обратно в файл
+    File.open(@file_path, 'w') do |file|
+      file.write(JSON.pretty_generate(@parsed_data))
+    end
+  end
+
+  def edit(options={})
+    xp = options[:xp]
+    who = options[:who]
+    name = options[:name]
+
+    read_json #обновляем данные в переменной для парсинга
+
+    if @parsed_data[who] = []
+      @parsed_data[who] = name
+    else
+      name_parser = @parsed_data[who]
+      name_parser += name 
+      @parsed_data[who] = name_parser
+    end
+
+    @parsed_data[:xp] = xp
+
+    save_task #сохраняем эти данные в файл
+  end
 end
+
 
 class GameJSON
   attr_reader :parsed_data
@@ -41,12 +69,48 @@ class GameJSON
              {} # Если файла нет, создаем пустой массив задач
            end #парсим данные в переменную
   end
+
+  def save_task #метод для сохранения изменений в файл
+    # Записываем обновленные данные обратно в файл
+    File.open(@file_path, 'w') do |file|
+      file.write(JSON.pretty_generate(@parsed_data))
+    end
+  end
+
+  def edit(options={}) 
+    current_chapter = options[:current_chapter]
+    who = options[:who]
+    index = options[:index]
+    rep = options[:rep]
+
+    read_json #обновляем данные в переменной для парсинга
+
+    @parsed_data[current_chapter.to_sym][who][index][:rep] = rep
+    @parsed_data[current_chapter.to_sym][who][index][:completed] = true 
+
+    xp = user_data[:xp] + @parsed_data[current_chapter.to_sym][who][index][:xp]
+
+    options = {xp: xp, who: who, name: @parsed_data[current_chapter.to_sym][who][index][:name]}
+
+    UserJSON.new.edit
+
+    save_task #сохраняем эти данные в файл
+  end
+
+  def user_data
+    UserJSON.new.parsed_data
+  end
+
 end
 
 class Screen
   def clear
     print "\e[H\e[2J"
   end
+end
+
+class Statistic
+
 end
 
 class Menu
@@ -84,11 +148,11 @@ class Menu
   end
 
   def game_data
-    game_data = GameJSON.new.parsed_data
+    GameJSON.new.parsed_data
   end
 
   def user_data
-    user_data = UserJSON.new.parsed_data
+    UserJSON.new.parsed_data
   end
 
   def current_chapter
@@ -141,10 +205,15 @@ class Menu
     puts
     print "Укажите репозиторий или 1 чтобы вернуться назад: "
     choice = gets.chomp
-    return
+    
+    if choice != "1"
+      options = {current_chapter: current_chapter, who: who, index: index, rep: choice}
+      GameJSON.new.edit(options)
+    end #end if
   end
 
 end
+
 
 
 # # Запускаем воспроизведение звука в отдельном потоке
