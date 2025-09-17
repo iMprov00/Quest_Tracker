@@ -5,43 +5,123 @@ require 'json'
 include Win32
 
 
-class GameMap
-  attr_reader :index
+require 'fiddle'
+require 'fiddle/import'
+require 'colorize'
 
-  def initialize 
-    @map = GameJSON.new.parsed_data[:chapter]
-    @user = UserJSON.new.parsed_data
-    @index = 0
+class KeyboardHandler
+  # Импортируем функции из msvcrt.dll
+  module Console
+    extend Fiddle::Importer
+    dlload 'msvcrt.dll'
+    extern 'int _kbhit()'
+    extern 'int _getch()'
   end
 
-  def your_chapter
-    @map[(@user[:chapter]).to_sym]
+  # Коды специальных клавиш
+  SPECIAL_KEYS = {
+    72 => :up,
+    80 => :down,
+    75 => :left,
+    77 => :right,
+    13 => :enter,
+    27 => :escape,
+    9 => :tab,
+    8 => :backspace
+  }
+
+  # Буквенные клавиши
+  LETTER_KEYS = {
+    'a' => :a, 'A' => :a,
+    'b' => :b, 'B' => :b,
+    'c' => :c, 'C' => :c,
+    'd' => :d, 'D' => :d,
+    'e' => :e, 'E' => :e,
+    'f' => :f, 'F' => :f,
+    'g' => :g, 'G' => :g,
+    'h' => :h, 'H' => :h,
+    'i' => :i, 'I' => :i,
+    'j' => :j, 'J' => :j,
+    'k' => :k, 'K' => :k,
+    'l' => :l, 'L' => :l,
+    'm' => :m, 'M' => :m,
+    'n' => :n, 'N' => :n,
+    'o' => :o, 'O' => :o,
+    'p' => :p, 'P' => :p,
+    'q' => :q, 'Q' => :q,
+    'r' => :r, 'R' => :r,
+    's' => :s, 'S' => :s,
+    't' => :t, 'T' => :t,
+    'u' => :u, 'U' => :u,
+    'v' => :v, 'V' => :v,
+    'w' => :w, 'W' => :w,
+    'x' => :x, 'X' => :x,
+    'y' => :y, 'Y' => :y,
+    'z' => :z, 'Z' => :z
+  }
+
+  def initialize
+    @callbacks = {}
+    @running = false
   end
 
-  def chapter_quest
-    your_chapter[:quests].each do |value|
-      puts "#{@index += 1}. #{value[:name]}"
+  # Регистрация обработчика для клавиши
+  def on(key, &block)
+    @callbacks[key] = block
+  end
+
+  # Запуск прослушивания клавиш
+  def start
+    @running = true
+
+
+    loop do
+      break unless @running
+      process_input
+      sleep 0.01
     end
   end
 
-  def chapter_boss
+  # Остановка прослушивания
+  def stop
+    @running = false
+  end
 
+  private
+
+  def process_input
+    return unless Console._kbhit() != 0
+
+    key = Console._getch()
+    key_symbol = nil
+
+    # Обработка специальных клавиш (стрелки и т.д.)
+    if key == 0 || key == 224
+      key2 = Console._getch()
+      key_symbol = SPECIAL_KEYS[key2]
+     # puts "Специальная клавиша: #{key_symbol} (код: #{key2})" if key_symbol
+    else
+      # Обработка обычных клавиш
+      char = key.chr
+      key_symbol = SPECIAL_KEYS[key] || LETTER_KEYS[char] || char.to_sym
+      
+      if LETTER_KEYS[char]
+       # puts "Буквенная клавиша: #{key_symbol}"
+      elsif SPECIAL_KEYS[key]
+        #puts "Специальная клавиша: #{key_symbol}"
+      else
+       # puts "Другая клавиша: #{char.inspect} (код: #{key})"
+      end
+    end
+
+    # Вызов зарегистрированного обработчика
+    if key_symbol && @callbacks[key_symbol]
+      @callbacks[key_symbol].call(key_symbol)
+    end
   end
 end
 
-class PlayerStatistics 
-  def initialize
-    @user = UserJSON.new.parsed_data
-  end
 
-  def stat_player
-    puts "\tСтатистика"
-    puts "Имя: #{@user[:name]}"
-    puts "Пройдено квестов: #{@user[:quests].length}"
-    puts "Побеждено боссов: #{@user[:bosses].length}"
-    puts "Уровень: #{( Math.sqrt(@user[:xp]) / 5 ).round} || XP: #{@user[:xp]}"
-  end
-end
 
 class UserJSON 
   attr_reader :parsed_data
@@ -81,17 +161,60 @@ class GameJSON
   end
 end
 
+class TextArray
+  def arr(text, x)
+    view(text.split("/"), x)
+  end
+
+  def view(text, x)
+    text.each_with_index do |value, index|
+      if index == x 
+        puts value.on_white.black
+      else
+        puts value
+      end
+    end
+  end
+
+end
+
 class Messages
   def error
     puts "Некорректный ввод!"
   end
-end
 
-module Helper
-  module_function
+  def view(arr)
+    arr.each do |value|
+      puts "#{value}"
+    end
+  end
 
   def clear
     print "\e[H\e[2J"
+  end
+end
+
+class TextGame
+
+  def menu
+    "Отправиться в путь/Посмотреть статистику/Выйти"
+  end
+
+end
+#on_white.black
+class PositionChoice
+  attr_accessor :x
+
+  def initialize
+    @x = 0
+  end
+
+  def up(arr)
+    @x = [@x - 1, 0].max
+  end
+
+  def down(arr)
+    @x = [@x + 1, arr.length - 1].min
   end
 end
 
@@ -108,84 +231,34 @@ end
 
 start = StartMessage.new
 message = Messages.new
-map = GameMap.new
+keyboard = KeyboardHandler.new
+text_game = TextGame.new
+text_arr = TextArray.new
+position = PositionChoice.new
+
 #start.new_start
 
-Helper.clear
+message.clear
 
 puts "Добро пожаловать в RUBY REALMS!"
 sleep(2)
-Helper.clear
+message.clear
 
-statistics = PlayerStatistics.new
-statistics.stat_player
-sleep(1)
-
-loop do 
-  Helper.clear
-
-  puts "\tМеню"
-  puts "1. Отправиться в путь"
-  puts "2. Посмотреть статистику"
-  puts "3. Выйти"
-  print "Ввод: "
-  input = gets.to_i
-
-  case input
-
-  when 1
-    loop do
-
-      Helper.clear
-      puts "\tТип квеста"
-      puts "1. Задания"
-      puts "2. Босс"
-      puts "3. Назад"
-      print "Ввод: "
-      input = gets.to_i
-
-      case input
-
-      when 1
-        map = GameMap.new
-        Helper.clear
-        map.chapter_quest
-        print "Ввод: "
-        input = gets.to_i
-
-        if input <= map.index
-          puts "cool"
-          sleep(2)
-        elsif (input + 1) == map.index
-          break
-        else
-          Helper.clear
-          message.error
-          sleep(2)
-        end
-
-      when 2
-        map.chapter_boss
-      when 3
-        break
-      else
-        Helper.clear
-        message.error
-        sleep(2)
-      end
-
-    end #end loop
-
-  when 2
-    Helper.clear
-    statistics.stat_player
-    sleep(5)
-  when 3
-    exit
-  else
-    Helper.clear
-    message.error
-    sleep(2)
+  keyboard.on(:up) do 
+    menu_items = text_game.menu.split("/")
+    position.up(menu_items)
   end
 
+  keyboard.on(:down) do 
+    menu_items = text_game.menu.split("/")
+    position.down(menu_items)
+  end
+
+  Thread.new { keyboard.start }
+
+loop do 
+  message.clear
+  puts "\t Меню"
+  text_arr.arr(text_game.menu, position.x)
+  sleep 0.1
 end
