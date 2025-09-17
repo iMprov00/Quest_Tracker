@@ -43,20 +43,77 @@ class GameJSON
   end
 end
 
-
+class Screen
+  def clear
+    print "\e[H\e[2J"
+  end
+end
 
 class Menu
+  def initialize
+    @screen = Screen.new
+  end
 
   def show_main_menu
-
+    loop do
+      @screen.clear
+      puts "=== RUBY REALMS ==="
+      puts "1. Мои задания"
+      puts "2. Статистика"
+      puts "3. Выйти"
+      print "Выберите вариант: "
+      
+      choice = gets.chomp.to_i
+      
+      case choice
+      when 1
+        show_quests_menu
+      when 2
+        show_stats
+      when 3
+        exit
+      else
+        @screen.clear
+        puts "Неверный выбор!"
+        sleep(2)
+      end
+    end
   end
 
   def show_quests_menu
+    user_data = UserJSON.new.parsed_data
+    game_data = GameJSON.new.parsed_data
+    current_chapter = user_data[:chapter]
 
+    available_quests = game_data[current_chapter.to_sym][:quests].select {|q| q[:completed] == false }
+
+    loop do
+      @screen.clear
+      puts "=== RUBY REALMS ==="
+
+      available_quests.each_with_index do |value, index|
+        puts "#{index + 1}. #{value[:name]}"
+      end
+      puts "#{available_quests.size + 1}. Назад"
+      
+      choice = gets.chomp.to_i
+
+      if choice == available_quests.size + 1 
+        return
+      elsif choice.between?(1, available_quests.size)
+        show_quest_details(available_quests.size - 1)
+      else
+        @screen.clear
+        puts "Неверный выбор!"
+        sleep(2)
+      end #end if
+    end #end loop
   end
 
   def show_quest_details(index)
+    game_data = GameJSON.new.parsed_data
 
+    
   end
 
 end
@@ -73,12 +130,16 @@ end
 # end
 
 start = StartMessage.new
-message = Messages.new
+screen = Screen.new
+menu = Menu.new
 
 #start.new_start
 
-message.clear
+screen.clear
 
 puts "Добро пожаловать в RUBY REALMS!"
 sleep(2)
-message.clear
+
+loop do 
+  menu.show_main_menu
+end
