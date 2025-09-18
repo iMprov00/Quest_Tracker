@@ -36,14 +36,10 @@ class UserJSON
     name = options[:name]
 
     read_json #обновляем данные в переменной для парсинга
+ 
+    @parsed_data[who] << name
 
-    if @parsed_data[who] = []
-      @parsed_data[who] = name
-    else
-      name_parser = @parsed_data[who]
-      name_parser += name 
-      @parsed_data[who] = name_parser
-    end
+    xp = @parsed_data[:xp].to_i + xp.to_i
 
     @parsed_data[:xp] = xp
 
@@ -85,21 +81,21 @@ class GameJSON
 
     read_json #обновляем данные в переменной для парсинга
 
-    @parsed_data[current_chapter.to_sym][who][index][:rep] = rep
-    @parsed_data[current_chapter.to_sym][who][index][:completed] = true 
+    quests_data = @parsed_data[current_chapter.to_sym][who][index]
 
-    xp = user_data[:xp] + @parsed_data[current_chapter.to_sym][who][index][:xp]
+    quests_data[:rep] = rep
+    quests_data[:completed] = true 
 
-    options = {xp: xp, who: who, name: @parsed_data[current_chapter.to_sym][who][index][:name]}
+    options = {xp: quests_data[:xp], who: who, name: quests_data[:name]}
 
-    UserJSON.new.edit
+    UserJSON.new.edit(options)
 
     save_task #сохраняем эти данные в файл
   end
 
-  def user_data
-    UserJSON.new.parsed_data
-  end
+  # def user_data
+  #   UserJSON.new.parsed_data
+  # end
 
 end
 
@@ -107,10 +103,6 @@ class Screen
   def clear
     print "\e[H\e[2J"
   end
-end
-
-class Statistic
-
 end
 
 class Menu
@@ -183,6 +175,10 @@ class Menu
           return
         elsif choice.between?(1, available_quests.size)
           show_quest_details(available_quests.size - 1, who)
+          @screen.clear
+          puts "Поздравляю, ты прошел это задание!"
+          sleep(3)
+          return
         else
           @screen.clear
           puts "Неверный выбор!"
@@ -212,6 +208,13 @@ class Menu
     end #end if
   end
 
+  def show_stats
+    puts "=== Статистика ==="  
+    puts "Пройдено заданий: #{user_data[:quests].size}"
+    puts "Побеждено боссов: #{user_data[:bosses].size}"
+    puts "Текущая глава: #{user_data[:chapter]}"
+    puts ""
+  end
 end
 
 
