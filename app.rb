@@ -251,7 +251,7 @@ class GamerStat
   def completed
     chapter_data = game_data[user_chapter.to_sym]
     if chapter_data.nil?
-      start_music
+      start_music_1
       start = StartMessage.new
       start.new_start
 
@@ -279,7 +279,7 @@ class GamerStat
     user_data.parsed_data[:chapter]
   end
 
-  def start_music
+  def start_music_1
     # Запускаем воспроизведение звука в отдельном потоке
     sound_thread = Thread.new do
       begin
@@ -290,10 +290,27 @@ class GamerStat
       end
     end
   end
+
+  def start_music_2
+    chapter_data = game_data[user_chapter.to_sym]
+    if chapter_data.nil?
+
+    else
+      # Запускаем воспроизведение звука в отдельном потоке
+      sound_thread = Thread.new do
+        begin
+          # Попробуйте использовать ASYNC, если это возможно
+          Sound.play('sound2.wav', Sound::ASYNC) # Если не работает, оставьте Sound.play('sound.wav')
+        rescue => e
+          puts "Ошибка воспроизведения звука: #{e.message}"
+        end
+      end
+    end
+  end
 end
 
 
-
+stat = GamerStat.new
 
 
 screen = Screen.new
@@ -307,5 +324,7 @@ puts "Добро пожаловать в RUBY REALMS!"
 sleep(2)
 
 loop do 
+  stat.start_music_2
   menu.show_main_menu
+
 end
