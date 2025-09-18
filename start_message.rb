@@ -84,6 +84,7 @@ class StartMessage
     print '...'
     sleep_dialog
     sleep_dialog
+    clear_scren
   end
 
 end

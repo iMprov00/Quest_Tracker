@@ -45,6 +45,14 @@ class UserJSON
 
     save_task #сохраняем эти данные в файл
   end
+
+  def edit_chapter(chapter)
+    read_json #обновляем данные в переменной для парсинга
+
+    @parsed_data[:chapter] = chapter
+
+    save_task #сохраняем эти данные в файл
+  end
 end
 
 
@@ -110,9 +118,15 @@ class Menu
     @screen = Screen.new
   end
 
+  def game_stat
+    GamerStat.new
+  end
+
   def show_main_menu
     loop do
       @screen.clear
+      game_stat.completed
+
       puts "=== RUBY REALMS ==="
       puts "1. Мои задания"
       puts "2. Боссы"
@@ -209,31 +223,83 @@ class Menu
   end
 
   def show_stats
+    @screen.clear
     puts "=== Статистика ==="  
     puts "Пройдено заданий: #{user_data[:quests].size}"
     puts "Побеждено боссов: #{user_data[:bosses].size}"
     puts "Текущая глава: #{user_data[:chapter]}"
-    puts ""
+    puts "Уровень: #{(Math.sqrt(user_data[:xp].to_i)/5).round}  XP: #{user_data[:xp]}" 
+    sleep(5)
+  end
+end
+
+class GamerStat
+  def chapter
+    case user_chapter
+    
+    when "I"
+      user_data.edit_chapter("II")
+    when "II"
+      user_data.edit_chapter("III")
+    when "III"
+      user_data.edit_chapter("IV")
+    when "IV"
+
+    end
+  end
+
+  def completed
+    chapter_data = game_data[user_chapter.to_sym]
+    if chapter_data.nil?
+      start_music
+      start = StartMessage.new
+      start.new_start
+
+      user_data.edit_chapter("I")
+      return
+    end
+    
+    available_quests = chapter_data[:quests].select { |q| q[:completed] == false }
+    available_bosses = chapter_data[:bosses].select { |q| q[:completed] == false }
+
+    if available_quests.empty? && available_bosses.empty?
+      chapter
+    end
+  end
+
+  def game_data
+    GameJSON.new.parsed_data
+  end
+
+  def user_data
+    UserJSON.new
+  end
+
+  def user_chapter
+    user_data.parsed_data[:chapter]
+  end
+
+  def start_music
+    # Запускаем воспроизведение звука в отдельном потоке
+    sound_thread = Thread.new do
+      begin
+        # Попробуйте использовать ASYNC, если это возможно
+        Sound.play('sound.wav', Sound::ASYNC) # Если не работает, оставьте Sound.play('sound.wav')
+      rescue => e
+        puts "Ошибка воспроизведения звука: #{e.message}"
+      end
+    end
   end
 end
 
 
 
-# # Запускаем воспроизведение звука в отдельном потоке
-# sound_thread = Thread.new do
-#   begin
-#     # Попробуйте использовать ASYNC, если это возможно
-#     Sound.play('sound.wav', Sound::ASYNC) # Если не работает, оставьте Sound.play('sound.wav')
-#   rescue => e
-#     puts "Ошибка воспроизведения звука: #{e.message}"
-#   end
-# end
 
-start = StartMessage.new
+
 screen = Screen.new
 menu = Menu.new
 
-#start.new_start
+
 
 screen.clear
 
